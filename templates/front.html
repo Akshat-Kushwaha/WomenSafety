@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Women Safety Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-shield-alt fa-2x"></i>
+            <h2>Women Safety Analytics</h2>
+        </div>
+        <div class="sidebar-menu">
+            <ul>
+                <li class="active">
+                    <a href="#">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Hotspot Map</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-video"></i>
+                        <span>CCTV Monitoring</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Incident Reports</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Women Safety Analytics Dashboard</h1>
+            <div class="header-controls">
+                <select class="date-filter">
+                    <option>Last 24 Hours</option>
+                    <option>Last 7 Days</option>
+                    <option selected>Last 30 Days</option>
+                    <option>Last 3 Months</option>
+                </select>
+                <div class="alert-badge">
+                    <i class="fas fa-bell"></i>
+                    <span>12 New Alerts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon bg-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>47</h3>
+                    <p>Violence Cases Detected</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>128</h3>
+                    <p>Suspicious Activities</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>89%</h3>
+                    <p>Detection Accuracy</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>14</h3>
+                    <p>High-Risk Hotspots</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Incident Trends</h3>
+                    <select>
+                        <option>Last 7 Days</option>
+                        <option selected>Last 30 Days</option>
+                        <option>Last 3 Months</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="incidentChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Severity Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map and Activity Section -->
+        <div class="map-activity-container">
+            <div class="map-card">
+                <div class="chart-header">
+                    <h3>Safety Hotspots Map</h3>
+                    <div>
+                        <button class="date-filter">Refresh Data</button>
+                    </div>
+                </div>
+                <div id="hotspot-map"></div>
+            </div>
+            <div class="activity-container">
+                <div class="chart-header">
+                    <h3>Recent Incidents</h3>
+                    <a href="#">View All</a>
+                </div>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="activity-icon severity-high">
+                            <i class="fas fa-fist-raised"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h4>Physical Assault</h4>
+                            <p>Central Market Area</p>
+                        </div>
+                        <div class="activity-time">15 min ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon severity-medium">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h4>Chasing Detected</h4>
+                            <p>Park Street</p>
+                        </div>
+                        <div class="activity-time">42 min ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon severity-high">
+                            <i class="fas fa-microphone-alt-slash"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h4>Harassment</h4>
+                            <p>Bus Stand</p>
+                        </div>
+                        <div class="activity-time">1 hour ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon severity-low">
+                            <i class="fas fa-user-ninja"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h4>Suspicious Loitering</h4>
+                            <p>College Road</p>
+                        </div>
+                        <div class="activity-time">2 hours ago</div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon severity-medium">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="activity-info">
+                            <h4>Vehicle Following</h4>
+                            <p>Residential Area</p>
+                        </div>
+                        <div class="activity-time">3 hours ago</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Live Feed Section -->
+        <div class="live-feed-container">
+            <div class="live-feed-header">
+                <h3>Live CCTV Monitoring</h3>
+                <div class="live-indicator">
+                    <div class="live-pulse"></div>
+                    <span>LIVE</span>
+                </div>
+            </div>
+            <div class="cctv-grid">
+                <div class="cctv-feed">
+                    <div class="cctv-label">
+                        <span>Camera #12 - Market Square</span>
+                        <span class="detection-badge">Violence Detected</span>
+                    </div>
+                </div>
+                <div class="cctv-feed">
+                    <div class="cctv-label">
+                        <span>Camera #07 - Park Entrance</span>
+                        <span class="detection-badge">Suspicious</span>
+                    </div>
+                </div>
+                <div class="cctv-feed">
+                    <div class="cctv-label">
+                        <span>Camera #23 - Bus Terminal</span>
+                        <span>Monitoring</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Incident Trends Chart
+        const incidentCtx = document.getElementById('incidentChart').getContext('2d');
+        const incidentChart = new Chart(incidentCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                datasets: [
+                    {
+                        label: 'Violence Cases',
+                        data: [12, 19, 15, 25, 22, 30, 28, 47],
+                        borderColor: '#DC143C',
+                        backgroundColor: 'rgba(220, 20, 60, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Suspicious Activities',
+                        data: [45, 52, 60, 75, 82, 95, 110, 128],
+                        borderColor: '#FF8C00',
+                        backgroundColor: 'rgba(255, 140, 0, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Severity Distribution Chart
+        const severityCtx = document.getElementById('severityChart').getContext('2d');
+        const severityChart = new Chart(severityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Severity', 'Medium Severity', 'Low Severity'],
+                datasets: [{
+                    data: [47, 68, 60],
+                    backgroundColor: [
+                        '#DC143C',
+                        '#FF8C00',
+                        '#1E90FF'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Initialize Map
+        const map = L.map('hotspot-map').setView([28.6139, 77.2090], 12); // Delhi coordinates
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add hotspot markers
+        const hotspots = [
+            { lat: 28.6139, lng: 77.2090, severity: 'high', title: 'Market Area' },
+            { lat: 28.6129, lng: 77.2295, severity: 'medium', title: 'Park Street' },
+            { lat: 28.6200, lng: 77.2100, severity: 'high', title: 'Bus Stand' },
+            { lat: 28.6300, lng: 77.2200, severity: 'low', title: 'College Road' },
+            { lat: 28.6000, lng: 77.2300, severity: 'medium', title: 'Residential Area' }
+        ];
+
+        hotspots.forEach(hotspot => {
+            let color;
+            if (hotspot.severity === 'high') color = 'red';
+            else if (hotspot.severity === 'medium') color = 'orange';
+            else color = 'blue';
+
+            L.circleMarker([hotspot.lat, hotspot.lng], {
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.6,
+                radius: 10
+            }).addTo(map).bindPopup(`<b>${hotspot.title}</b><br>Severity: ${hotspot.severity}`);
+        });
+    </script>
+</body>
+</html>

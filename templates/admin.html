@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Admin - Add User</title>
+    <style>
+        body{font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif;background:#f5f7fb;padding:24px}
+        .card{max-width:1000px;margin:0 auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+        h1{margin-bottom:12px;font-size:20px}
+        .grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start}
+        .form-group{margin-bottom:14px}
+        label{display:block;margin-bottom:6px;color:#333;font-weight:600}
+        input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+        .btn{display:inline-block;padding:10px 14px;background:#2575fc;color:#fff;border:none;border-radius:6px;cursor:pointer}
+        .btn.danger{background:#e74c3c}
+        .msg{margin-top:12px;font-size:14px}
+        .error{color:#e74c3c}
+        .success{color:#2ecc71}
+        .small{font-size:13px;color:#666;margin-top:8px}
+        table{width:100%;border-collapse:collapse;margin-top:8px}
+        th,td{padding:8px 10px;border-bottom:1px solid #eee;text-align:left}
+        th{background:#fafafa;font-weight:600}
+        .actions{display:flex;gap:8px}
+        .empty{color:#666;padding:12px 0}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Admin — Add new user</h1>
+
+        <div class="grid">
+            <div>
+                <form id="add-user-form" action="/admin/add_user" method="post" novalidate>
+                    <div class="form-group">
+                        <label for="full_name">Full name</label>
+                        <input id="full_name" name="full_name" type="text" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" name="password" type="password" required minlength="6" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm password</label>
+                        <input id="confirm_password" name="confirm_password" type="password" required minlength="6" />
+                    </div>
+
+                    <!-- role is fixed to 'user' -->
+                    <input type="hidden" name="role" value="user" />
+
+                    <button type="submit" class="btn">Create user</button>
+                    <a href="/" style="margin-left:12px;color:#555;text-decoration:none">Back</a>
+
+                    <div id="message" class="msg small"></div>
+                </form>
+            </div>
+
+            <div>
+                <h2 style="margin:0 0 8px 0;font-size:16px">Existing users</h2>
+                {% if users and users|length > 0 %}
+                <table aria-live="polite">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th style="width:140px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr id="user-{{ loop.index }}">
+                            <td>{{ u.name or u.full_name or u.fullName or u.displayName or '' }}</td>
+                            <td>{{ u.email or u.username or '' }}</td>
+                            <td>{{ u.role or 'user' }}</td>
+                            <td>
+                                <div class="actions">
+                                    <!-- Remove form: uses email as identifier; adjust if backend expects id -->
+                                    <form method="post" action="/admin/remove_user" onsubmit="return confirmRemove(this);">
+                                        <input type="hidden" name="email" value="{{ u.email or '' }}">
+                                        <input type="hidden" name="user_id" value="{{ u._id or '' }}">
+                                        <button type="submit" class="btn danger">Remove</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <div class="empty">No users found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function validateEmail(email){
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        document.getElementById('add-user-form').addEventListener('submit', function(e){
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = '';
+            msgEl.className = 'msg small';
+
+            const name = document.getElementById('full_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pw = document.getElementById('password').value;
+            const cpw = document.getElementById('confirm_password').value;
+
+            if(!name){
+                e.preventDefault();
+                msgEl.textContent = 'Full name is required';
+                msgEl.classList.add('error');
+                return;
+            }
+            if(!validateEmail(email)){
+                e.preventDefault();
+                msgEl.textContent = 'Enter a valid email';
+                msgEl.classList.add('error');
+                return;
+            }
+            if(pw.length < 6){
+                e.preventDefault();
+                msgEl.textContent = 'Password must be at least 6 characters';
+                msgEl.classList.add('error');
+                return;
+            }
+            if(pw !== cpw){
+                e.preventDefault();
+                msgEl.textContent = 'Passwords do not match';
+                msgEl.classList.add('error');
+                return;
+            }
+
+            // allow form to submit to server; server will handle creation and redirect
+            msgEl.textContent = 'Creating user...';
+            msgEl.classList.add('success');
+        });
+
+        // confirm before removing user; will submit if OK
+        function confirmRemove(form){
+            const nameCell = form.closest('tr')?.querySelector('td')?.textContent || '';
+            const email = form.querySelector('input[name="email"]')?.value || '';
+            const label = nameCell.trim() || email;
+            return confirm('Remove user "' + label + '"? This action cannot be undone.');
+        }
+
+        // show optional message from query param ?msg=...
+        (function(){
+            const params = new URLSearchParams(window.location.search);
+            const m = params.get('msg');
+            if(m){
+                const el = document.getElementById('message') || document.createElement('div');
+                el.textContent = decodeURIComponent(m);
+                el.classList.add('success');
+                if(!document.getElementById('message')) document.body.prepend(el);
+            }
+        })();
+    </script>
+</body>
+</html>
