@@ -133,7 +133,7 @@ def create_app():
             return redirect(url_for('admin_panel', msg="Error removing user"))
 
     return app
-
+app = create_app()
 if __name__ == "__main__":
-    app = create_app()
+    
     app.run(debug=True)
