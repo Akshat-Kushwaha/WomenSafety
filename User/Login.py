@@ -5,7 +5,7 @@ import uuid
 
 
 class UserAuthDB:
-    def __init__(self, uri="mongodb://localhost:27017/"):
+    def __init__(self, uri="mongodb+srv://akshatcbr05:iZV9JOcTrmMMj6mm@cluster0.kl3i9.mongodb.net/"):
         self.client = MongoClient(uri)
         self.db = self.client["WaspAdmin"]
         self.users = self.db["User"]
